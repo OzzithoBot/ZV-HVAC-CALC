@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HVAC Calculator — ZV PERU SAC</title>
+<style>
+:root{--p:#1F4E79;--s:#2F5496;--a:#4DABF7;--g:#28a745;--w:#ffc107;--r:#dc3545;--bg:#eef2f7}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:#333;line-height:1.5}
+.hd{background:linear-gradient(135deg,var(--p),var(--s));color:#fff;padding:20px 24px;text-align:center}
+.hd h1{font-size:1.5rem;margin-bottom:4px}
+.hd p{font-size:.8rem;opacity:.8}
+.nav{background:#fff;padding:8px 16px;border-bottom:1px solid #ddd;display:flex;gap:4px;flex-wrap:wrap;justify-content:center;position:sticky;top:0;z-index:100}
+.nav button{padding:7px 12px;border:2px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:.75rem;font-weight:600}
+.nav button:hover,.nav button.active{background:var(--p);color:#fff;border-color:var(--p)}
+.ct{max-width:1000px;margin:20px auto;padding:0 16px 40px}
+.section{display:none}
+.section.active{display:block}
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,.07);margin-bottom:16px;overflow:hidden}
+.ch{background:var(--s);color:#fff;padding:10px 16px;font-weight:700;font-size:.9rem}
+.cb{padding:16px}
+.fg{margin-bottom:8px}
+.fg label{display:block;font-weight:600;margin-bottom:2px;font-size:.8rem;color:var(--p)}
+.fg input,.fg select{width:100%;padding:6px 10px;border:2px solid #ccc;border-radius:5px;font-size:.85rem}
+.fg input:focus,.fg select:focus{border-color:var(--a);outline:none}
+.row{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap}
+.row .fg{flex:1;min-width:90px;margin-bottom:0}
+.row .unit{width:80px;min-width:80px}
+.btn{display:inline-block;padding:8px 18px;border:none;border-radius:5px;font-size:.85rem;font-weight:600;cursor:pointer;margin-right:6px;margin-top:6px}
+.btn-calc{background:var(--g);color:#fff}
+.btn-add{background:var(--g);color:#fff;padding:5px 12px;font-size:.78rem}
+.btn-del{background:var(--r);color:#fff;padding:3px 8px;font-size:.72rem;border-radius:3px}
+.status{margin:8px 0;padding:6px 10px;border-radius:5px;font-size:.8rem;font-weight:600}
+.status.ok{background:#d4edda;color:#155724}
+.status.err{background:#f8d7da;color:#721c24}
+.status.info{background:#d1ecf1;color:#0c5460}
+.res{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:8px;padding:14px;margin-top:12px;display:none}
+.res h3{color:var(--p);margin-bottom:8px;font-size:.95rem}
+.kt{width:100%;border-collapse:collapse;font-size:.8rem}
+.kt th{background:var(--p);color:#fff;padding:5px 6px;text-align:left;font-size:.75rem}
+.kt td{padding:4px 6px;border-bottom:1px solid #ddd}
+.kt tr:nth-child(even){background:#f9f9f9}
+.kt .st{font-weight:700;background:#e3f2fd}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px;margin-bottom:10px}
+.kpi{background:#fff;border-radius:6px;padding:6px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.kpi .v{font-size:1rem;font-weight:700;color:var(--p)}
+.kpi .l{font-size:.6rem;color:#777;margin-top:2px}
+.info-box{background:#e3f2fd;border:1px solid #90caf9;border-radius:6px;padding:8px 12px;margin:8px 0;font-size:.76rem;color:#1565c0;line-height:1.4}
+.warn-box{background:#fff3cd;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;margin:6px 0;font-size:.76rem;color:#856404}
+.formula-box{background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px 12px;margin:8px 0;font-family:'Courier New',monospace;font-size:.76rem;color:#495057;line-height:1.5}
+h4{color:var(--s);font-size:.88rem;margin:12px 0 6px;padding-bottom:3px;border-bottom:2px solid var(--s)}
+.footer{text-align:center;padding:20px;color:#999;font-size:.72rem}
+</style>
+</head>
+<body>
+
+<div class="hd">
+<h1>🔧 HVAC Calculator</h1>
+<p>Carga Térmica · Equipos · Tuberías Refrigerante · Ductos · Agua Helada · Eléctrico</p>
+</div>
+
+<div class="nav">
+<button class="active" onclick="showSection('carga',this)">🌡️ Carga Térmica</button>
+<button onclick="showSection('equipos',this)">❄️ Equipos</button>
+<button onclick="showSection('tubref',this)">🔩 Tubería Ref.</button>
+<button onclick="showSection('ductos',this)">📐 Ductos</button>
+<button onclick="showSection('agua',this)">💧 Agua Helada</button>
+<button onclick="showSection('electrico',this)">⚡ Eléctrico</button>
+</div>
+
+<div class="ct">
+
+<!-- CARGA TERMICA -->
+<div id="carga" class="section active">
+<div class="card"><div class="ch">🌡️ Cálculo de Carga Térmica (ASHRAE RTS simplificado)</div><div class="cb">
+<div class="row">
+<div class="fg"><label>Área (m²)</label><input type="number" id="ct-area" value="50" min="1"></div>
+<div class="fg"><label>Altura techo (m)</label><input type="number" id="ct-altura" value="3" min="1" step="0.1"></div>
+<div class="fg"><label>N° ocupantes</label><input type="number" id="ct-ocup" value="10" min="1"></div>
+</div>
+<div class="row">
+<div class="fg"><label>TBS Ext (°C)</label><input type="number" id="ct-tbs-ext" value="32"></div>
+<div class="fg"><label>TBS Int (°C)</label><input type="number" id="ct-tbs-int" value="24"></div>
+<div class="fg"><label>HR Int (%)</label><input type="number" id="ct-hr-int" value="50" min="20" max="80"></div>
+</div>
+<div class="row">
+<div class="fg"><label>Muro ext (m²)</label><input type="number" id="ct-muro" value="20" min="0"></div>
+<div class="fg"><label>U muro (W/m²K)</label><input type="number" id="ct-u-muro" value="2.5" step="0.1"></div>
+<div class="fg"><label>Techo (m²)</label><input type="number" id="ct-techo" value="50" min="0"></div>
+<div class="fg"><label>U techo (W/m²K)</label><input type="number" id="ct-u-techo" value="0.5" step="0.1"></div>
+</div>
+<div class="row">
+<div class="fg"><label>Ventana (m²)</label><input type="number" id="ct-vent" value="10" min="0"></div>
+<div class="fg"><label>U vent (W/m²K)</label><input type="number" id="ct-u-vent" value="5.8" step="0.1"></div>
+<div class="fg"><label>SHGC</label><input type="number" id="ct-shgc" value="0.25" min="0" max="1" step="0.05"></div>
+<div class="fg"><label>ACH ventilación</label><input type="number" id="ct-ach" value="4" min="0" step="0.5"></div>
+</div>
+<div class="row">
+<div class="fg"><label>Iluminación (W/m²)</label><input type="number" id="ct-luz" value="15" min="0"></div>
+<div class="fg"><label>Equipos (W/m²)</label><input type="number" id="ct-eq" value="20" min="0"></div>
+<div class="fg"><label>ACH infiltración</label><input type="number" id="ct-inf" value="0.5" min="0" step="0.1"></div>
+</div>
+<button class="btn btn-calc" onclick="calcCarga()">🔢 Calcular</button>
+<div id="ct-status" class="status info">Listo</div>
+</div></div>
+<div class="res" id="ct-res"><div class="kp" id="ct-kp"></div><div id="ct-warn"></div><table class="kt" id="ct-tb"></table></div>
+</div>
+
+<!-- EQUIPOS -->
+<div id="equipos" class="section">
+<div class="card"><div class="ch">❄️ Selección de Equipos</div><div class="cb">
+<div class="row">
+<div class="fg"><label>Carga Sensible (BTU/h)</label><input type="number" id="eq-qs" value="30000" min="0"></div>
+<div class="fg"><label>Carga Latente (BTU/h)</label><input type="number" id="eq-ql" value="10000" min="0"></div>
+<div class="fg"><label>Carga Total (BTU/h)</label><input type="number" id="eq-qt" value="40000" min="0"></div>
+</div>
+<div class="row">
+<div class="fg"><label>TR</label><input type="number" id="eq-tr" value="3.3" readonly style="background:#f0f0f0"></div>
+<div class="fg"><label>Tipo sistema</label>
+<select id="eq-tipo">
+<option value="split">Split Pared</option>
+<option value="fc">Fan Coil + Chiller</option>
+<option value="paquete">Paquete Rooftop</option>
+<option value="vrf">VRF</option>
+<option value="chiller">Chiller + AHU</option>
+</select></div>
+<div class="fg"><label>COP</label><input type="number" id="eq-cop" value="3.0" min="1" max="6" step="0.1"></div>
+</div>
+<button class="btn btn-calc" onclick="calcEquipos()">🔢 Seleccionar</button>
+<div id="eq-status" class="status info">Listo</div>
+</div></div>
+<div class="res" id="eq-res"><div class="kp" id="eq-kp"></div><div id="eq-warn"></div><table class="kt" id="eq-tb"></table></div>
+</div>
+
+<!-- TUBERIAS REFRIGERANTE -->
+<div id="tubref" class="section">
+<div class="card"><div class="ch">🔩 Tuberías de Refrigerante</div><div class="cb">
+<div class="row">
+<div class="fg"><label>Capacidad (TR)</label><input type="number" id="tr-cap" value="3" min="0.5" step="0.5"></div>
+<div class="fg"><label>Refrigerante</label>
+<select id="tr-ref"><option value="R410A">R-410A</option><option value="R32">R-32</option><option value="R22">R-22</option></select>
+</div>
+<div class="fg"><label>T evap (°C)</label><input type="number" id="tr-te" value="7" min="-20" max="20"></div>
+<div class="fg"><label>T cond (°C)</label><input type="number" id="tr-tc" value="45" min="30" max="60"></div>
+</div>
+<h4>Línea de Líquido</h4>
+<div class="row">
+<div class="fg"><label>Longitud (m)</label><input type="number" id="tr-ll" value="15" min="1"></div>
+<div class="fg"><label>N° accesorios</label><input type="number" id="tr-al" value="6" min="0"></div>
+<div class="fg"><label>Desnivel (m)</label><input type="number" id="tr-dl" value="3" step="0.5"></div>
+</div>
+<h4>Línea de Succión</h4>
+<div class="row">
+<div class="fg"><label>Longitud (m)</label><input type="number" id="tr-ls" value="15" min="1"></div>
+<div class="fg"><label>N° accesorios</label><input type="number" id="tr-as" value="6" min="0"></div>
+</div>
+<button class="btn btn-calc" onclick="calcTubRef()">🔢 Calcular</button>
+<div id="tr-status" class="status info">Listo</div>
+</div></div>
+<div class="res" id="tr-res"><div class="kp" id="tr-kp"></div><div id="tr-warn"></div><table class="kt" id="tr-tb"></table></div>
+</div>
+
+<!-- DUCTOS -->
+<div id="ductos" class="section">
+<div class="card"><div class="ch">📐 Ductos (Altshul-Tsal + Huebscher)</div><div class="cb">
+<div class="row">
+<div class="fg"><label>Q (CFM)</label><input type="number" id="d-q" value="2000" min="0" step="50"></div>
+<div class="fg"><label>V (FPM)</label><input type="number" id="d-v" value="1500" min="0" step="50"></div>
+<div class="fg"><label>Hf (in.wg/100ft)</label><input type="number" id="d-hf" value="0.1" min="0" step="0.01"></div>
+<div class="fg"><label>D (in)</label><input type="number" id="d-d" value="0" min="0" step="0.5"></div>
+</div>
+<div class="row">
+<div class="fg"><label>Ancho a (in)</label><input type="number" id="d-a" value="0" min="0" step="0.5"></div>
+<div class="fg"><label>Alto b (in)</label><input type="number" id="d-b" value="0" min="0" step="0.5"></div>
+<div class="fg"><label>Longitud (ft)</label><input type="number" id="d-l" value="20" min="0"></div>
+</div>
+<button class="btn btn-calc" onclick="calcDuctos()">🔢 Calcular</button>
+<div id="d-status" class="status info">Listo</div>
+</div></div>
+<div class="res" id="d-res"><div class="kp" id="d-kp"></div><div id="d-warn"></div><table class="kt" id="d-tb"></table></div>
+</div>
+
+<!-- AGUA HELADA -->
+<div id="agua" class="section">
+<div class="card"><div class="ch">💧 Tuberías de Agua Helada</div><div class="cb">
+<div class="row">
+<div class="fg"><label>Caudal (GPM)</label><input type="number" id="ah-gpm" value="10" min="0.1" step="0.5"></div>
+<div class="fg"><label>Capacidad (TR)</label><input type="number" id="ah-tr" value="5" min="0.5" step="0.5"></div>
+<div class="fg"><label>Longitud (m)</label><input type="number" id="ah-l" value="20" min="1"></div>
+<div class="fg"><label>N° accesorios</label><input type="number" id="ah-acc" value="8" min="0"></div>
+</div>
+<div class="row">
+<div class="fg"><label>V máx (m/s)</label>
+<select id="ah-vmax"><option value="1.0">1.0</option><option value="1.2" selected>1.2</option><option value="1.5">1.5</option><option value="2.0">2.0</option></select>
+</div>
+</div>
+<button class="btn btn-calc" onclick="calcAgua()">🔢 Calcular</button>
+<div id="ah-status" class="status info">Listo</div>
+</div></div>
+<div class="res" id="ah-res"><div class="kp" id="ah-kp"></div><div id="ah-warn"></div><table class="kt" id="ah-tb"></table></div>
+</div>
+
+<!-- ELECTRICO -->
+<div id="electrico" class="section">
+<div class="card"><div class="ch">⚡ Sistema Eléctrico HVAC</div><div class="cb">
+<div class="row">
+<div class="fg"><label>Capacidad (TR)</label><input type="number" id="el-tr" value="3" min="0.5" step="0.5"></div>
+<div class="fg"><label>Tensión (V)</label>
+<select id="el-v"><option value="220">220V Mono</option><option value="380" selected>380V Tri</option></select>
+</div>
+<div class="fg"><label>COP</label><input type="number" id="el-cop" value="3.0" min="1" max="6" step="0.1"></div>
+</div>
+<div class="row">
+<div class="fg"><label>Long. cable (m)</label><input type="number" id="el-l" value="20" min="1"></div>
+<div class="fg"><label>ΔV máx (%)</label>
+<select id="el-dv"><option value="2" selected>2%</option><option value="3">3%</option><option value="5">5%</option></select>
+</div>
+</div>
+<button class="btn btn-calc" onclick="calcElectrico()">🔢 Calcular</button>
+<div id="el-status" class="status info">Listo</div>
+</div></div>
+<div class="res" id="el-res"><div class="kp" id="el-kp"></div><div id="el-warn"></div><table class="kt" id="el-tb"></table></div>
+</div>
+
+</div>
+
+<div class="footer">HVAC Calculator — ZV PERU SAC · ASHRAE / NEC / NTE E.020</div>
+
+<script>
+(function(){
+"use strict";
+
+function showSection(id,btn){
+document.querySelectorAll(".section").forEach(function(s){s.classList.remove("active")});
+document.querySelectorAll(".nav button").forEach(function(b){b.classList.remove("active")});
+document.getElementById(id).classList.add("active");
+btn.classList.add("active");
+}
+
+function $(id){return document.getElementById(id);}
+function gv(id){return parseFloat($(id).value)||0;}
+function rnd(n,d){return Number(Math.round(n+"e"+d)+"e-"+d);}
+function setStatus(id,msg,type){
+$(id).textContent=msg;
+$(id).className="status "+(type==="ok"?"ok":type==="err"?"err":"info");
+}
+
+// ===================== CARGA TÉRMICA =====================
+function calcCarga(){
+try{
+var area=gv("ct-area"),alt=gv("ct-altura"),ocup=gv("ct-ocup");
+var tbsE=gv("ct-tbs-ext"),tbsI=gv("ct-tbs-int"),hrI=gv("ct-hr-int");
+var muro=gv("ct-muro"),uMuro=gv("ct-u-muro");
+var techo=gv("ct-techo"),uTecho=gv("ct-u-techo");
+var vent=gv("ct-vent"),uVent=gv("ct-u-vent"),shgc=gv("ct-shgc");
+var luz=gv("ct-luz"),eq=gv("ct-eq"),ach=gv("ct-ach"),inf=gv("ct-inf");
+
+var vol=area*alt;
+var cfmV=ach*vol/0.0283168;
+var cfmI=inf*vol/0.0283168;
+
+var qMuro=muro*uMuro*(tbsE-tbsI);
+var qTecho=techo*uTecho*(tbsE+5-tbsI);
+var qVentC=vent*uVent*(tbsE-tbsI);
+var qVentS=vent*shgc*700*0.8;
+var qOcupS=ocup*75,qOcupL=ocup*55;
+var qLuz=area*luz,qEq=area*eq;
+var qVentSens=1.23*cfmV*(tbsE-tbsI);
+var qVentLat=3010*cfmV*0.0024;
+var qInfSens=1.23*cfmI*(tbsE-tbsI);
+
+var qSens=qMuro+qTecho+qVentC+qVentS+qOcupS+qLuz+qEq+qVentSens+qInfSens;
+var qLat=qOcupL+qVentLat;
+var qTot=qSens+qLat;
+var tr=qTot*3.412/12000;
+
+$("ct-kp").innerHTML=
+'<div class="kpi"><div class="v">'+rnd(qTot*3.412,0)+'</div><div class="l">Q Total BTU/h</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(qSens*3.412,0)+'</div><div class="l">Q Sensible</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(qLat*3.412,0)+'</div><div class="l">Q Latente</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(tr,2)+'</div><div class="l">TR</div></div>';
+
+var tb="<tr><th>Concepto</th><th>Sensible W</th><th>Latente W</th><th>Total W</th></tr>";
+tb+="<tr><td>Muro</td><td>"+rnd(qMuro,0)+"</td><td>-</td><td>"+rnd(qMuro,0)+"</td></tr>";
+tb+="<tr><td>Techo</td><td>"+rnd(qTecho,0)+"</td><td>-</td><td>"+rnd(qTecho,0)+"</td></tr>";
+tb+="<tr><td>Ventana cond.</td><td>"+rnd(qVentC,0)+"</td><td>-</td><td>"+rnd(qVentC,0)+"</td></tr>";
+tb+="<tr><td>Ventana solar</td><td>"+rnd(qVentS,0)+"</td><td>-</td><td>"+rnd(qVentS,0)+"</td></tr>";
+tb+="<tr><td>Ocupantes</td><td>"+rnd(qOcupS,0)+"</td><td>"+rnd(qOcupL,0)+"</td><td>"+rnd(qOcupS+qOcupL,0)+"</td></tr>";
+tb+="<tr><td>Iluminación</td><td>"+rnd(qLuz,0)+"</td><td>-</td><td>"+rnd(qLuz,0)+"</td></tr>";
+tb+="<tr><td>Equipos</td><td>"+rnd(qEq,0)+"</td><td>-</td><td>"+rnd(qEq,0)+"</td></tr>";
+tb+="<tr><td>Ventilación</td><td>"+rnd(qVentSens,0)+"</td><td>"+rnd(qVentLat,0)+"</td><td>"+rnd(qVentSens+qVentLat,0)+"</td></tr>";
+tb+="<tr><td>Infiltración</td><td>"+rnd(qInfSens,0)+"</td><td>-</td><td>"+rnd(qInfSens,0)+"</td></tr>";
+tb+="<tr class='st'><td>TOTAL</td><td>"+rnd(qSens,0)+"</td><td>"+rnd(qLat,0)+"</td><td>"+rnd(qTot,0)+"</td></tr>";
+$("ct-tb").innerHTML=tb;
+$("ct-warn").innerHTML=qLat>qSens*0.5?'<div class="warn-box">⚠️ Alta carga latente</div>':'';
+setStatus("ct-status","✅ Carga: "+rnd(tr,2)+" TR","ok");
+$("ct-res").style.display="block";
+}catch(e){setStatus("ct-status","Error: "+e.message,"err");}
+}
+
+// ===================== EQUIPOS =====================
+function calcEquipos(){
+try{
+var qs=gv("eq-qs"),ql=gv("eq-ql"),qt=gv("eq-qt");
+var tr=qt/12000;
+$("eq-tr").value=rnd(tr,2);
+var tipo=$("eq-tipo").value,cop=gv("eq-cop");
+var dt=12,cfm=qs/(1.08*dt);
+var shr=qs/qt;
+var pW=qt/cop;
+var rec="";
+if(tipo==="split")rec=tr<=1.5?"Split 12-18k BTU":tr<=2?"Split 18-24k BTU":"Split 36k BTU o múltiples";
+else if(tipo==="fc")rec="FC "+Math.ceil(tr)+" TR + Chiller "+Math.ceil(tr*1.2)+" TR";
+else if(tipo==="paquete")rec="Paquete "+Math.ceil(tr*1.15)+" TR";
+else if(tipo==="vrf")rec="VRF "+Math.ceil(tr)+" TR";
+else rec="Chiller "+Math.ceil(tr*1.1)+" TR + AHU "+Math.round(cfm)+" CFM";
+
+$("eq-kp").innerHTML=
+'<div class="kpi"><div class="v">'+rnd(tr,2)+'</div><div class="l">TR</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(cfm,0)+'</div><div class="l">CFM</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(shr,2)+'</div><div class="l">SHR</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(pW,0)+'</div><div class="l">P (W)</div></div>';
+
+var tb="<tr><th>Parámetro</th><th>Valor</th><th>Unidad</th></tr>";
+tb+="<tr><td>TR</td><td>"+rnd(tr,2)+"</td><td>TR</td></tr>";
+tb+="<tr><td>CFM</td><td>"+rnd(cfm,0)+"</td><td>CFM</td></tr>";
+tb+="<tr><td>SHR</td><td>"+rnd(shr,2)+"</td><td>-</td></tr>";
+tb+="<tr><td>Potencia</td><td>"+rnd(pW,0)+"</td><td>W</td></tr>";
+tb+="<tr class='st'><td colspan='3'>"+rec+"</td></tr>";
+$("eq-tb").innerHTML=tb;
+setStatus("eq-status","✅ Equipo: "+rnd(tr,2)+" TR","ok");
+$("eq-res").style.display="block";
+}catch(e){setStatus("eq-status","Error: "+e.message,"err");}
+}
+
+// ===================== TUBERIAS REFRIGERANTE =====================
+function calcTubRef(){
+try{
+var cap=gv("tr-cap"),tEv=gv("tr-te"),tCd=gv("tr-tc");
+var lL=gv("tr-ll"),aL=gv("tr-al"),dL=gv("tr-dl");
+var lS=gv("tr-ls"),aS=gv("tr-as");
+
+var dLq={0.5:0.375,1:0.375,1.5:0.375,2:0.5,3:0.5,4:0.5,5:0.625,6:0.625,7.5:0.625,10:0.75,15:0.75,20:0.875,25:0.875,30:1};
+var dS={0.5:0.625,1:0.75,1.5:0.75,2:0.875,3:0.875,4:1,5:1.125,6:1.125,7.5:1.375,10:1.375,15:1.625,20:1.625,25:1.875,30:1.875,40:2.125,50:2.625};
+
+function findD(table,cap){
+var keys=Object.keys(table).map(Number).sort(function(a,b){return a-b;});
+for(var i=0;i<keys.length;i++){if(cap<=keys[i])return table[keys[i]];}
+return table[keys[keys.length-1]];
+}
+
+var dLiq=findD(dLq,cap)||0.625;
+var dSuc=findD(dS,cap)||0.875;
+var leL=lL+aL*1.5+dL;
+var leS=lS+aS*1.5;
+var dpL=leL*0.0328*2.5;
+var dpS=leS*0.0328*1.5;
+
+$("tr-kp").innerHTML=
+'<div class="kpi"><div class="v">'+dLiq+'"</div><div class="l">Líquido</div></div>'+
+'<div class="kpi"><div class="v">'+dSuc+'"</div><div class="l">Succión</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(leL,1)+'</div><div class="l">L.eq liq (m)</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(leS,1)+'</div><div class="l">L.eq suc (m)</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(dpL,1)+'</div><div class="l">ΔP liq (psi)</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(dpS,1)+'</div><div class="l">ΔP suc (psi)</div></div>';
+
+var tb="<tr><th>Parámetro</th><th>Líquido</th><th>Succión</th></tr>";
+tb+="<tr><td>Diámetro</td><td>"+dLiq+" in</td><td>"+dSuc+" in</td></tr>";
+tb+="<tr><td>Long. equivalente</td><td>"+rnd(leL,1)+" m</td><td>"+rnd(leS,1)+" m</td></tr>";
+tb+="<tr><td>ΔP estimada</td><td>"+rnd(dpL,1)+" psi</td><td>"+rnd(dpS,1)+" psi</td></tr>";
+$("tr-tb").innerHTML=tb;
+$("tr-warn").innerHTML=dpS>3?'<div class="warn-box">⚠️ ΔP succión alta</div>':'';
+setStatus("tr-status","✅ Tuberías calculadas","ok");
+$("tr-res").style.display="block";
+}catch(e){setStatus("tr-status","Error: "+e.message,"err");}
+}
+
+// ===================== DUCTOS =====================
+var lastRect="w";
+$("d-a").addEventListener("input",function(){lastRect="w";});
+$("d-b").addEventListener("input",function(){lastRect="h";});
+
+function calcDuctos(){
+try{
+var Q=gv("d-q"),V=gv("d-v"),Hf=gv("d-hf"),D=gv("d-d");
+var a=gv("d-a"),b=gv("d-b"),L=gv("d-l");
+
+if(D===0&&Hf===0){D=Math.sqrt(183.346*Q/V);Hf=0.109136*Math.pow(Q,1.9)/Math.pow(D,5.02);}
+else if(D===0&&V===0){D=Math.pow(0.109136*Math.pow(Q,1.9)/Hf,1/5.02);V=183.346*Q/(D*D);}
+else if(Hf===0&&V===0){V=183.346*Q/(D*D);Hf=0.109136*Math.pow(Q,1.9)/Math.pow(D,5.02);}
+
+if(a>0&&b>0){
+if(lastRect==="w")b=solveHue(D,a);else a=solveHue(D,b);
+}else if(a>0&&b===0){b=solveHue(D,a);}
+else if(b>0&&a===0){a=solveHue(D,b);}
+else if(a===0&&b===0){a=D*Math.pow(2,0.25)/1.30;b=a;}
+
+var dpT=Hf*L/100;
+var pSup=(a>0&&b>0)?2*(a+b)/12:Math.PI*D/12;
+var peso=pSup*L*1.5;
+
+$("d-kp").innerHTML=
+'<div class="kpi"><div class="v">'+rnd(D,2)+'"</div><div class="l">D circular</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(a,1)+'"×'+rnd(b,1)+'"</div><div class="l">Rectangular</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(V,0)+'</div><div class="l">V (FPM)</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(dpT,4)+'</div><div class="l">ΔP total</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(peso,1)+'</div><div class="l">Peso (kg)</div></div>';
+
+var tb="<tr><th>Parámetro</th><th>Valor</th><th>Unidad</th></tr>";
+tb+="<tr><td>D circular</td><td>"+rnd(D,2)+"</td><td>in</td></tr>";
+tb+="<tr><td>a × b</td><td>"+rnd(a,1)+" × "+rnd(b,1)+"</td><td>in</td></tr>";
+tb+="<tr><td>Velocidad</td><td>"+rnd(V,0)+"</td><td>FPM</td></tr>";
+tb+="<tr><td>Hf</td><td>"+rnd(Hf,4)+"</td><td>in.wg/100ft</td></tr>";
+tb+="<tr><td>ΔP total</td><td>"+rnd(dpT,4)+"</td><td>in.wg</td></tr>";
+tb+="<tr><td>Peso</td><td>"+rnd(peso,1)+"</td><td>kg</td></tr>";
+$("d-tb").innerHTML=tb;
+$("d-warn").innerHTML=V>2000?'<div class="warn-box">⚠️ Velocidad alta</div>':'';
+setStatus("d-status","✅ Ducto calculado","ok");
+$("d-res").style.display="block";
+}catch(e){setStatus("d-status","Error: "+e.message,"err");}
+}
+
+function solveHue(De,fixed){
+if(De===0||fixed===0)return 0;
+var x=fixed;
+for(var i=0;i<100;i++){
+var f=1.30*Math.pow(fixed*x,0.625)/Math.pow(fixed+x,0.25)-De;
+if(Math.abs(f)<0.001)break;
+var h=0.001;
+var fh=1.30*Math.pow(fixed*(x+h),0.625)/Math.pow(fixed+x+h,0.25)-De;
+var df=(fh-f)/h;
+if(df===0)break;
+x=x-f/df;
+if(x<0.1)x=0.1;
+}
+return x;
+}
+
+// ===================== AGUA HELADA =====================
+function calcAgua(){
+try{
+var gpm=gv("ah-gpm"),tr=gv("ah-tr"),L=gv("ah-l"),acc=gv("ah-acc");
+var vmax=parseFloat($("ah-vmax").value);
+var lps=gpm*0.06309;
+var qM3s=lps/1000;
+var aReq=qM3s/vmax;
+var dReq=Math.sqrt(4*aReq/Math.PI)*1000;
+var dCom=[20,25,32,40,50,65,80,100,125,150,200,250,300];
+var dC=dCom[dCom.length-1];
+for(var i=0;i<dCom.length;i++){if(dReq<=dCom[i]){dC=dCom[i];break;}}
+var aC=Math.PI*Math.pow(dC/2000,2);
+var vR=qM3s/aC;
+var leq=L+acc*3;
+var dp=0.02*(leq/(dC/1000))*(1000*vR*vR/2)/9806.65;
+
+$("ah-kp").innerHTML=
+'<div class="kpi"><div class="v">'+dC+'</div><div class="l">Diámetro (mm)</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(vR,2)+'</div><div class="l">V real (m/s)</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(dp,2)+'</div><div class="l">ΔP (m.ca)</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(gpm/tr,1)+'</div><div class="l">GPM/TR</div></div>';
+
+var tb="<tr><th>Parámetro</th><th>Valor</th><th>Unidad</th></tr>";
+tb+="<tr><td>Caudal</td><td>"+rnd(gpm,1)+"</td><td>GPM</td></tr>";
+tb+="<tr><td>Diámetro</td><td>"+dC+"</td><td>mm</td></tr>";
+tb+="<tr><td>Velocidad</td><td>"+rnd(vR,2)+"</td><td>m/s</td></tr>";
+tb+="<tr><td>ΔP</td><td>"+rnd(dp,2)+"</td><td>m.ca</td></tr>";
+$("ah-tb").innerHTML=tb;
+$("ah-warn").innerHTML=vR>vmax?'<div class="warn-box">⚠️ Velocidad excede máximo</div>':'';
+setStatus("ah-status","✅ Tubería agua calculada","ok");
+$("ah-res").style.display="block";
+}catch(e){setStatus("ah-status","Error: "+e.message,"err");}
+}
+
+// ===================== ELECTRICO =====================
+function calcElectrico(){
+try{
+var tr=gv("el-tr"),volt=gv("el-v"),cop=gv("el-cop"),L=gv("el-l");
+var dv=parseFloat($("el-dv").value)/100;
+var pW=tr*3517/cop,fp=0.85;
+var iN=volt==220?pW/(volt*fp):pW/(volt*Math.sqrt(3)*fp);
+var vdV=volt*dv;
+var secc=(2*0.0172*L*iN)/vdV;
+var sC=[2.5,4,6,10,16,25,35,50,70,95,120,150,185,240];
+var sCom=sC[sC.length-1];
+for(var i=0;i<sC.length;i++){if(secc<=sC[i]){sCom=sC[i];break;}}
+var bN=iN*1.25;
+var bStd=[10,15,20,25,30,40,50,60,70,80,100,125,150,175,200,225,250,300,350,400];
+var bC=bStd[bStd.length-1];
+for(var i=0;i<bStd.length;i++){if(bN<=bStd[i]){bC=bStd[i];break;}}
+var vdR=(2*0.0172*L*iN)/sCom;
+var vdP=(vdR/volt)*100;
+
+$("el-kp").innerHTML=
+'<div class="kpi"><div class="v">'+rnd(iN,1)+'</div><div class="l">I nominal (A)</div></div>'+
+'<div class="kpi"><div class="v">'+sCom+'</div><div class="l">Cable (mm²)</div></div>'+
+'<div class="kpi"><div class="v">'+bC+'</div><div class="l">Breaker (A)</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(vdP,2)+'%</div><div class="l">ΔV real</div></div>';
+
+var tb="<tr><th>Parámetro</th><th>Valor</th><th>Unidad</th></tr>";
+tb+="<tr><td>Potencia</td><td>"+rnd(pW,0)+"</td><td>W</td></tr>";
+tb+="<tr><td>Corriente nominal</td><td>"+rnd(iN,1)+"</td><td>A</td></tr>";
+tb+="<tr><td>Sección cable</td><td>"+sCom+"</td><td>mm²</td></tr>";
+tb+="<tr><td>Breaker</td><td>"+bC+"</td><td>A</td></tr>";
+tb+="<tr><td>Caída tensión</td><td>"+rnd(vdP,2)+"%</td><td>-</td></tr>";
+$("el-tb").innerHTML=tb;
+$("el-warn").innerHTML=vdP>dv*100?'<div class="warn-box">⚠️ Caída de tensión excede límite</div>':'';
+setStatus("el-status","✅ Eléctrico calculado","ok");
+$("el-res").style.display="block";
+}catch(e){setStatus("el-status","Error: "+e.message,"err");}
+}
+
+})();
+</script>
+</body>
+</html>
