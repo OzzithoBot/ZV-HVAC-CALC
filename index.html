@@ -512,7 +512,8 @@ row.innerHTML='<td>'+ductoRowCount+'</td>'+
 '<td><input type="number" value="1" min="1" class="dc"></td>'+
 '<td class="dp">-</td>'+
 '<td class="dt">-</td>'+
-'<td><button class="btn btn-del" onclick="this.closest('tr').remove();calcMetradoDuctos();">✕</button></td>';
+'<td><button class="btn btn-del btn-del-row">✕</button></td>';
+row.querySelector(".btn-del-row").addEventListener("click",function(){row.remove();calcMetradoDuctos();});
 row.querySelector(".da").addEventListener("input",function(){calcMetradoDuctos();});
 row.querySelector(".db").addEventListener("input",function(){calcMetradoDuctos();});
 row.querySelector(".dl").addEventListener("input",function(){calcMetradoDuctos();});
@@ -578,7 +579,8 @@ row.innerHTML='<td>'+difRowCount+'</td>'+
 '<td><input type="number" value="200" min="0" class="dc"></td>'+
 '<td><input type="number" value="1" min="1" class="dn"></td>'+
 '<td class="dt">-</td>'+
-'<td><button class="btn btn-del" onclick="this.closest('tr').remove();calcMetradoDif();">✕</button></td>';
+'<td><button class="btn btn-del btn-del-dif">✕</button></td>';
+row.querySelector(".btn-del-dif").addEventListener("click",function(){row.remove();calcMetradoDif();});
 row.querySelector(".ds").addEventListener("input",function(){calcMetradoDif();});
 row.querySelector(".dc").addEventListener("input",function(){calcMetradoDif();});
 row.querySelector(".dn").addEventListener("input",function(){calcMetradoDif();});
@@ -611,7 +613,8 @@ row.innerHTML='<td>'+rjRowCount+'</td>'+
 '<td><input type="number" value="400" min="0" class="rc"></td>'+
 '<td><input type="number" value="1" min="1" class="rn"></td>'+
 '<td class="rt">-</td>'+
-'<td><button class="btn btn-del" onclick="this.closest('tr').remove();calcMetradoRj();">✕</button></td>';
+'<td><button class="btn btn-del btn-del-rj">✕</button></td>';
+row.querySelector(".btn-del-rj").addEventListener("click",function(){row.remove();calcMetradoRj();});
 row.querySelector(".rs").addEventListener("input",function(){calcMetradoRj();});
 row.querySelector(".rc").addEventListener("input",function(){calcMetradoRj();});
 row.querySelector(".rn").addEventListener("input",function(){calcMetradoRj();});
