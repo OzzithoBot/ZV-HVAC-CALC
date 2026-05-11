@@ -26,7 +26,6 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:#333;lin
 .fg input:focus,.fg select:focus{border-color:var(--a);outline:none}
 .row{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap}
 .row .fg{flex:1;min-width:90px;margin-bottom:0}
-.row .unit{width:80px;min-width:80px}
 .btn{display:inline-block;padding:8px 18px;border:none;border-radius:5px;font-size:.85rem;font-weight:600;cursor:pointer;margin-right:6px;margin-top:6px}
 .btn-calc{background:var(--g);color:#fff}
 .btn-add{background:var(--g);color:#fff;padding:5px 12px;font-size:.78rem}
@@ -48,16 +47,20 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:#333;lin
 .kpi .l{font-size:.6rem;color:#777;margin-top:2px}
 .info-box{background:#e3f2fd;border:1px solid #90caf9;border-radius:6px;padding:8px 12px;margin:8px 0;font-size:.76rem;color:#1565c0;line-height:1.4}
 .warn-box{background:#fff3cd;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;margin:6px 0;font-size:.76rem;color:#856404}
-.formula-box{background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px 12px;margin:8px 0;font-family:'Courier New',monospace;font-size:.76rem;color:#495057;line-height:1.5}
 h4{color:var(--s);font-size:.88rem;margin:12px 0 6px;padding-bottom:3px;border-bottom:2px solid var(--s)}
 .footer{text-align:center;padding:20px;color:#999;font-size:.72rem}
+.mt{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:8px}
+.mt th{background:var(--s);color:#fff;padding:4px 5px;text-align:center;font-size:.72rem}
+.mt td{padding:3px 5px;border-bottom:1px solid #ddd;text-align:center}
+.mt input{width:60px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:.75rem;text-align:center}
+.mt .tot{font-weight:700;background:#e8f5e9}
 </style>
 </head>
 <body>
 
 <div class="hd">
 <h1>🔧 HVAC Calculator</h1>
-<p>Carga Térmica · Equipos · Tuberías Refrigerante · Ductos · Agua Helada · Eléctrico</p>
+<p>Carga Térmica · Equipos · Tuberías Refrigerante · Ductos · Difusores · Agua Helada · Eléctrico</p>
 </div>
 
 <div class="nav">
@@ -65,13 +68,14 @@ h4{color:var(--s);font-size:.88rem;margin:12px 0 6px;padding-bottom:3px;border-b
 <button onclick="showSection('equipos',this)">❄️ Equipos</button>
 <button onclick="showSection('tubref',this)">🔩 Tubería Ref.</button>
 <button onclick="showSection('ductos',this)">📐 Ductos</button>
+<button onclick="showSection('difusores',this)">🌀 Difusores</button>
 <button onclick="showSection('agua',this)">💧 Agua Helada</button>
 <button onclick="showSection('electrico',this)">⚡ Eléctrico</button>
 </div>
 
 <div class="ct">
 
-<!-- CARGA TERMICA -->
+<!-- ==================== CARGA TERMICA ==================== -->
 <div id="carga" class="section active">
 <div class="card"><div class="ch">🌡️ Cálculo de Carga Térmica (ASHRAE RTS simplificado)</div><div class="cb">
 <div class="row">
@@ -107,7 +111,7 @@ h4{color:var(--s);font-size:.88rem;margin:12px 0 6px;padding-bottom:3px;border-b
 <div class="res" id="ct-res"><div class="kp" id="ct-kp"></div><div id="ct-warn"></div><table class="kt" id="ct-tb"></table></div>
 </div>
 
-<!-- EQUIPOS -->
+<!-- ==================== EQUIPOS ==================== -->
 <div id="equipos" class="section">
 <div class="card"><div class="ch">❄️ Selección de Equipos</div><div class="cb">
 <div class="row">
@@ -133,7 +137,7 @@ h4{color:var(--s);font-size:.88rem;margin:12px 0 6px;padding-bottom:3px;border-b
 <div class="res" id="eq-res"><div class="kp" id="eq-kp"></div><div id="eq-warn"></div><table class="kt" id="eq-tb"></table></div>
 </div>
 
-<!-- TUBERIAS REFRIGERANTE -->
+<!-- ==================== TUBERIAS REFRIGERANTE ==================== -->
 <div id="tubref" class="section">
 <div class="card"><div class="ch">🔩 Tuberías de Refrigerante</div><div class="cb">
 <div class="row">
@@ -161,9 +165,10 @@ h4{color:var(--s);font-size:.88rem;margin:12px 0 6px;padding-bottom:3px;border-b
 <div class="res" id="tr-res"><div class="kp" id="tr-kp"></div><div id="tr-warn"></div><table class="kt" id="tr-tb"></table></div>
 </div>
 
-<!-- DUCTOS -->
+<!-- ==================== DUCTOS ==================== -->
 <div id="ductos" class="section">
 <div class="card"><div class="ch">📐 Ductos (Altshul-Tsal + Huebscher)</div><div class="cb">
+<div class="info-box">💡 <strong>Ingrese 2 de 3:</strong> Q, V o D. El tercero se calcula. Para rectangular: ingrese "a" o "b" y el otro se calcula por Huebscher.</div>
 <div class="row">
 <div class="fg"><label>Q (CFM)</label><input type="number" id="d-q" value="2000" min="0" step="50"></div>
 <div class="fg"><label>V (FPM)</label><input type="number" id="d-v" value="1500" min="0" step="50"></div>
@@ -179,9 +184,60 @@ h4{color:var(--s);font-size:.88rem;margin:12px 0 6px;padding-bottom:3px;border-b
 <div id="d-status" class="status info">Listo</div>
 </div></div>
 <div class="res" id="d-res"><div class="kp" id="d-kp"></div><div id="d-warn"></div><table class="kt" id="d-tb"></table></div>
+
+<!-- TABLA DE METRADO DE DUCTOS -->
+<div class="card"><div class="ch">📋 Metrado de Ductos</div><div class="cb">
+<div class="info-box">💡 Agregue tramos de ducto. El total se acumula automáticamente.</div>
+<button class="btn btn-add" onclick="addDuctoRow()">+ Agregar tramo</button>
+<button class="btn btn-calc" onclick="calcMetradoDuctos()">📊 Calcular Metrado</button>
+<table class="mt" id="mt-ductos">
+<tr><th>Item</th><th>Descripción</th><th>a (in)</th><th>b (in)</th><th>L (ft)</th><th>Cant.</th><th>Peso (kg)</th><th>Total (kg)</th><th>✕</th></tr>
+</table>
+<div id="mt-ductos-total" style="text-align:right;font-weight:700;padding:8px 0;color:var(--p);"></div>
+</div></div>
 </div>
 
-<!-- AGUA HELADA -->
+<!-- ==================== DIFUSORES Y REJILLAS ==================== -->
+<div id="difusores" class="section">
+<div class="card"><div class="ch">🌀 Difusores y Rejillas</div><div class="cb">
+<div class="info-box">💡 Calcule difusores (suministro) y rejillas (retorno) con metrado automático.</div>
+<div class="row">
+<div class="fg"><label>CFM total zona</label><input type="number" id="df-cfm-total" value="2000" min="0" step="50"></div>
+<div class="fg"><label>CFM por difusor</label><input type="number" id="df-cfm-unit" value="200" min="0" step="10"></div>
+<div class="fg"><label>Tamaño difusor (in)</label><input type="number" id="df-size" value="12" min="4" max="48"></div>
+</div>
+<div class="row">
+<div class="fg"><label>CFM por rejilla</label><input type="number" id="rj-cfm-unit" value="400" min="0" step="10"></div>
+<div class="fg"><label>Tamaño rejilla (in)</label><input type="number" id="rj-size" value="18" min="4" max="48"></div>
+<div class="fg"><label>V descarga (FPM)</label><input type="number" id="df-v-desc" value="300" min="100" max="800"></div>
+</div>
+<button class="btn btn-calc" onclick="calcDifRej()">🔢 Calcular</button>
+<div id="df-status" class="status info">Listo</div>
+</div></div>
+<div class="res" id="df-res"><div class="kp" id="df-kp"></div><div id="df-warn"></div><table class="kt" id="df-tb"></table></div>
+
+<!-- METRADO DIFUSORES -->
+<div class="card"><div class="ch">📋 Metrado de Difusores</div><div class="cb">
+<button class="btn btn-add" onclick="addDifRow()">+ Agregar</button>
+<button class="btn btn-calc" onclick="calcMetradoDif()">📊 Calcular Metrado</button>
+<table class="mt" id="mt-dif">
+<tr><th>Item</th><th>Ubicación</th><th>Tamaño (in)</th><th>CFM unit.</th><th>Cant.</th><th>Total CFM</th><th>✕</th></tr>
+</table>
+<div id="mt-dif-total" style="text-align:right;font-weight:700;padding:8px 0;color:var(--p);"></div>
+</div></div>
+
+<!-- METRADO REJILLAS -->
+<div class="card"><div class="ch">📋 Metrado de Rejillas</div><div class="cb">
+<button class="btn btn-add" onclick="addRjRow()">+ Agregar</button>
+<button class="btn btn-calc" onclick="calcMetradoRj()">📊 Calcular Metrado</button>
+<table class="mt" id="mt-rj">
+<tr><th>Item</th><th>Ubicación</th><th>Tamaño (in)</th><th>CFM unit.</th><th>Cant.</th><th>Total CFM</th><th>✕</th></tr>
+</table>
+<div id="mt-rj-total" style="text-align:right;font-weight:700;padding:8px 0;color:var(--p);"></div>
+</div></div>
+</div>
+
+<!-- ==================== AGUA HELADA ==================== -->
 <div id="agua" class="section">
 <div class="card"><div class="ch">💧 Tuberías de Agua Helada</div><div class="cb">
 <div class="row">
@@ -201,7 +257,7 @@ h4{color:var(--s);font-size:.88rem;margin:12px 0 6px;padding-bottom:3px;border-b
 <div class="res" id="ah-res"><div class="kp" id="ah-kp"></div><div id="ah-warn"></div><table class="kt" id="ah-tb"></table></div>
 </div>
 
-<!-- ELECTRICO -->
+<!-- ==================== ELECTRICO ==================== -->
 <div id="electrico" class="section">
 <div class="card"><div class="ch">⚡ Sistema Eléctrico HVAC</div><div class="cb">
 <div class="row">
@@ -231,11 +287,12 @@ h4{color:var(--s);font-size:.88rem;margin:12px 0 6px;padding-bottom:3px;border-b
 (function(){
 "use strict";
 
+// ===================== NAVEGACION =====================
 function showSection(id,btn){
 document.querySelectorAll(".section").forEach(function(s){s.classList.remove("active")});
 document.querySelectorAll(".nav button").forEach(function(b){b.classList.remove("active")});
 document.getElementById(id).classList.add("active");
-btn.classList.add("active");
+if(btn)btn.classList.add("active");
 }
 
 function $(id){return document.getElementById(id);}
@@ -307,7 +364,7 @@ var tr=qt/12000;
 $("eq-tr").value=rnd(tr,2);
 var tipo=$("eq-tipo").value,cop=gv("eq-cop");
 var dt=12,cfm=qs/(1.08*dt);
-var shr=qs/qt;
+var shr=qt>0?qs/qt:0;
 var pW=qt/cop;
 var rec="";
 if(tipo==="split")rec=tr<=1.5?"Split 12-18k BTU":tr<=2?"Split 18-24k BTU":"Split 36k BTU o múltiples";
@@ -378,8 +435,12 @@ $("tr-res").style.display="block";
 
 // ===================== DUCTOS =====================
 var lastRect="w";
-$("d-a").addEventListener("input",function(){lastRect="w";});
-$("d-b").addEventListener("input",function(){lastRect="h";});
+document.addEventListener("DOMContentLoaded",function(){
+var elA=document.getElementById("d-a");
+var elB=document.getElementById("d-b");
+if(elA)elA.addEventListener("input",function(){lastRect="w";});
+if(elB)elB.addEventListener("input",function(){lastRect="h";});
+});
 
 function calcDuctos(){
 try{
@@ -437,6 +498,140 @@ if(x<0.1)x=0.1;
 return x;
 }
 
+// ===================== METRADO DE DUCTOS =====================
+var ductoRowCount=0;
+function addDuctoRow(){
+ductoRowCount++;
+var tb=document.getElementById("mt-ductos");
+var row=tb.insertRow(-1);
+row.innerHTML='<td>'+ductoRowCount+'</td>'+
+'<td><input type="text" placeholder="Descripción" style="width:100px"></td>'+
+'<td><input type="number" value="12" min="0" step="0.5" class="da"></td>'+
+'<td><input type="number" value="8" min="0" step="0.5" class="db"></td>'+
+'<td><input type="number" value="10" min="0" class="dl"></td>'+
+'<td><input type="number" value="1" min="1" class="dc"></td>'+
+'<td class="dp">-</td>'+
+'<td class="dt">-</td>'+
+'<td><button class="btn btn-del" onclick="this.closest('tr').remove();calcMetradoDuctos();">✕</button></td>';
+row.querySelector(".da").addEventListener("input",function(){calcMetradoDuctos();});
+row.querySelector(".db").addEventListener("input",function(){calcMetradoDuctos();});
+row.querySelector(".dl").addEventListener("input",function(){calcMetradoDuctos();});
+row.querySelector(".dc").addEventListener("input",function(){calcMetradoDuctos();});
+}
+
+function calcMetradoDuctos(){
+var tb=document.getElementById("mt-ductos");
+var rows=tb.querySelectorAll("tr");
+var totalPeso=0;
+for(var i=1;i<rows.length;i++){
+var cells=rows[i].querySelectorAll("td");
+var a=parseFloat(rows[i].querySelector(".da").value)||0;
+var b=parseFloat(rows[i].querySelector(".db").value)||0;
+var L=parseFloat(rows[i].querySelector(".dl").value)||0;
+var c=parseFloat(rows[i].querySelector(".dc").value)||0;
+var perim=2*(a+b)/12;
+var peso=perim*L*1.5*c;
+cells[6].textContent=peso.toFixed(1);
+cells[7].textContent=peso.toFixed(1);
+totalPeso+=peso;
+}
+document.getElementById("mt-ductos-total").textContent="TOTAL PESO DUCTOS: "+totalPeso.toFixed(1)+" kg";
+}
+
+// ===================== DIFUSORES Y REJILLAS =====================
+function calcDifRej(){
+try{
+var cfmTot=gv("df-cfm-total"),cfmDif=gv("df-cfm-unit"),sizeDif=gv("df-size");
+var cfmRj=gv("rj-cfm-unit"),sizeRj=gv("rj-size"),vDesc=gv("df-v-desc");
+var nDif=cfmDif>0?Math.ceil(cfmTot/cfmDif):0;
+var nRj=cfmRj>0?Math.ceil(cfmTot/cfmRj):0;
+var areaDif=sizeDif*sizeDif*0.00064516;
+var vCalc=cfmDif/areaDif;
+var areaRj=sizeRj*sizeRj*0.00064516;
+var vRj=cfmRj/areaRj;
+
+$("df-kp").innerHTML=
+'<div class="kpi"><div class="v">'+nDif+'</div><div class="l">N° Difusores</div></div>'+
+'<div class="kpi"><div class="v">'+nRj+'</div><div class="l">N° Rejillas</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(vCalc,0)+'</div><div class="l">V dif (FPM)</div></div>'+
+'<div class="kpi"><div class="v">'+rnd(vRj,0)+'</div><div class="l">V rej (FPM)</div></div>';
+
+var tb="<tr><th>Elemento</th><th>Tamaño</th><th>CFM unit.</th><th>Cantidad</th><th>Total CFM</th></tr>";
+tb+="<tr><td>Difusor</td><td>"+sizeDif+"×"+sizeDif+" in</td><td>"+rnd(cfmDif,0)+"</td><td>"+nDif+"</td><td>"+rnd(nDif*cfmDif,0)+"</td></tr>";
+tb+="<tr><td>Rejilla</td><td>"+sizeRj+"×"+sizeRj+" in</td><td>"+rnd(cfmRj,0)+"</td><td>"+nRj+"</td><td>"+rnd(nRj*cfmRj,0)+"</td></tr>";
+$("df-tb").innerHTML=tb;
+$("df-warn").innerHTML=vCalc>600?'<div class="warn-box">⚠️ Velocidad de descarga alta (>600 FPM)</div>':'';
+setStatus("df-status","✅ Difusores/Rejillas calculados","ok");
+$("df-res").style.display="block";
+}catch(e){setStatus("df-status","Error: "+e.message,"err");}
+}
+
+// ===================== METRADO DIFUSORES =====================
+var difRowCount=0;
+function addDifRow(){
+difRowCount++;
+var tb=document.getElementById("mt-dif");
+var row=tb.insertRow(-1);
+row.innerHTML='<td>'+difRowCount+'</td>'+
+'<td><input type="text" placeholder="Ubicación" style="width:100px"></td>'+
+'<td><input type="number" value="12" min="4" class="ds"></td>'+
+'<td><input type="number" value="200" min="0" class="dc"></td>'+
+'<td><input type="number" value="1" min="1" class="dn"></td>'+
+'<td class="dt">-</td>'+
+'<td><button class="btn btn-del" onclick="this.closest('tr').remove();calcMetradoDif();">✕</button></td>';
+row.querySelector(".ds").addEventListener("input",function(){calcMetradoDif();});
+row.querySelector(".dc").addEventListener("input",function(){calcMetradoDif();});
+row.querySelector(".dn").addEventListener("input",function(){calcMetradoDif();});
+}
+
+function calcMetradoDif(){
+var tb=document.getElementById("mt-dif");
+var rows=tb.querySelectorAll("tr");
+var totalCant=0,totalCFM=0;
+for(var i=1;i<rows.length;i++){
+var cfm=parseFloat(rows[i].querySelector(".dc").value)||0;
+var n=parseFloat(rows[i].querySelector(".dn").value)||0;
+var t=cfm*n;
+rows[i].querySelector(".dt").textContent=rnd(t,0);
+totalCant+=n;
+totalCFM+=t;
+}
+document.getElementById("mt-dif-total").textContent="TOTAL DIFUSORES: "+totalCant+" und · "+rnd(totalCFM,0)+" CFM";
+}
+
+// ===================== METRADO REJILLAS =====================
+var rjRowCount=0;
+function addRjRow(){
+rjRowCount++;
+var tb=document.getElementById("mt-rj");
+var row=tb.insertRow(-1);
+row.innerHTML='<td>'+rjRowCount+'</td>'+
+'<td><input type="text" placeholder="Ubicación" style="width:100px"></td>'+
+'<td><input type="number" value="18" min="4" class="rs"></td>'+
+'<td><input type="number" value="400" min="0" class="rc"></td>'+
+'<td><input type="number" value="1" min="1" class="rn"></td>'+
+'<td class="rt">-</td>'+
+'<td><button class="btn btn-del" onclick="this.closest('tr').remove();calcMetradoRj();">✕</button></td>';
+row.querySelector(".rs").addEventListener("input",function(){calcMetradoRj();});
+row.querySelector(".rc").addEventListener("input",function(){calcMetradoRj();});
+row.querySelector(".rn").addEventListener("input",function(){calcMetradoRj();});
+}
+
+function calcMetradoRj(){
+var tb=document.getElementById("mt-rj");
+var rows=tb.querySelectorAll("tr");
+var totalCant=0,totalCFM=0;
+for(var i=1;i<rows.length;i++){
+var cfm=parseFloat(rows[i].querySelector(".rc").value)||0;
+var n=parseFloat(rows[i].querySelector(".rn").value)||0;
+var t=cfm*n;
+rows[i].querySelector(".rt").textContent=rnd(t,0);
+totalCant+=n;
+totalCFM+=t;
+}
+document.getElementById("mt-rj-total").textContent="TOTAL REJILLAS: "+totalCant+" und · "+rnd(totalCFM,0)+" CFM";
+}
+
 // ===================== AGUA HELADA =====================
 function calcAgua(){
 try{
@@ -475,10 +670,10 @@ $("ah-res").style.display="block";
 // ===================== ELECTRICO =====================
 function calcElectrico(){
 try{
-var tr=gv("el-tr"),volt=gv("el-v"),cop=gv("el-cop"),L=gv("el-l");
+var tr=gv("el-tr"),volt=parseFloat($("el-v").value),cop=gv("el-cop"),L=gv("el-l");
 var dv=parseFloat($("el-dv").value)/100;
 var pW=tr*3517/cop,fp=0.85;
-var iN=volt==220?pW/(volt*fp):pW/(volt*Math.sqrt(3)*fp);
+var iN=volt===220?pW/(volt*fp):pW/(volt*Math.sqrt(3)*fp);
 var vdV=volt*dv;
 var secc=(2*0.0172*L*iN)/vdV;
 var sC=[2.5,4,6,10,16,25,35,50,70,95,120,150,185,240];
@@ -498,17 +693,32 @@ $("el-kp").innerHTML=
 '<div class="kpi"><div class="v">'+rnd(vdP,2)+'%</div><div class="l">ΔV real</div></div>';
 
 var tb="<tr><th>Parámetro</th><th>Valor</th><th>Unidad</th></tr>";
-tb+="<tr><td>Potencia</td><td>"+rnd(pW,0)+"</td><td>W</td></tr>";
-tb+="<tr><td>Corriente nominal</td><td>"+rnd(iN,1)+"</td><td>A</td></tr>";
+tb+="<tr><td>I nominal</td><td>"+rnd(iN,1)+"</td><td>A</td></tr>";
 tb+="<tr><td>Sección cable</td><td>"+sCom+"</td><td>mm²</td></tr>";
 tb+="<tr><td>Breaker</td><td>"+bC+"</td><td>A</td></tr>";
-tb+="<tr><td>Caída tensión</td><td>"+rnd(vdP,2)+"%</td><td>-</td></tr>";
+tb+="<tr><td>ΔV real</td><td>"+rnd(vdP,2)+"%</td><td>%</td></tr>";
 $("el-tb").innerHTML=tb;
-$("el-warn").innerHTML=vdP>dv*100?'<div class="warn-box">⚠️ Caída de tensión excede límite</div>':'';
+$("el-warn").innerHTML=vdP>5?'<div class="warn-box">⚠️ Caída de tensión excesiva</div>':'';
 setStatus("el-status","✅ Eléctrico calculado","ok");
 $("el-res").style.display="block";
 }catch(e){setStatus("el-status","Error: "+e.message,"err");}
 }
+
+// Exponer funciones globalmente
+window.showSection=showSection;
+window.calcCarga=calcCarga;
+window.calcEquipos=calcEquipos;
+window.calcTubRef=calcTubRef;
+window.calcDuctos=calcDuctos;
+window.calcAgua=calcAgua;
+window.calcElectrico=calcElectrico;
+window.addDuctoRow=addDuctoRow;
+window.calcMetradoDuctos=calcMetradoDuctos;
+window.calcDifRej=calcDifRej;
+window.addDifRow=addDifRow;
+window.calcMetradoDif=calcMetradoDif;
+window.addRjRow=addRjRow;
+window.calcMetradoRj=calcMetradoRj;
 
 })();
 </script>
